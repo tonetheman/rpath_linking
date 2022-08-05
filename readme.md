@@ -46,7 +46,7 @@ junk : testf.c
 	gcc -o junk testf.c -lf -L.
 ```
 
-You will get a binary that during the build is looking for libf.so and it is using the current directory tacked onto the search path.
+You will get a binary that during the build is looking for libf.so.1 and it is using the current directory tacked onto the search path.
 
 But the binary ```junk``` will still fail when you try to run it! Because in order to run ```junk``` needs a shared object file named libf.so.1 and you can verify that with this command
 
