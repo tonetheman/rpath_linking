@@ -70,8 +70,6 @@ export LD_LIBRARY_PATH=
 
 If you look at the next binary we see a different story
 
-## the 2nd way
-
 Now we are going to build the same binary with a little more information.
 ```makefile
 junkr : testf.c 
@@ -129,6 +127,42 @@ agcc@DESKTOP-REHHCAH:~/rpath/way1$ ldd junkr
 ```
 In both cases the command now shows that the binaries are looking for something called punkmonkey. That name comes from the soname that is hard coded at build/link time for that shared object.
 
+## the 2nd way
 
+Looking in directory way2 it all comes to a final end with the hardcoding.
+
+```makefile
+libf.so.4.2.1 : justf.c
+	# tell compiler to make an so and put the so name into the binary
+	# this time include the full path so when the binary link happens
+	# it should get the full path hard coded into the junk binary also
+	gcc -o libf.so.4.2.1 -shared justf.c -Wl,-soname,${PWD}/libf.so
+	# create some other links
+	ln -s libf.so.4.2.1 libf.so
+	ln -s libf.so.4.2.1 libf.so.1
+```
+
+The link step now hard codes the full path to libf.so in the soname.
+
+And when you look at the result binaries junk and junkr with ldd you see this
+```
+agcc@DESKTOP-REHHCAH:~/rpath/way2$ ldd junk
+        linux-vdso.so.1 (0x00007ffed15bb000)
+        /home/agcc/rpath/way2/libf.so (0x00007f0eb3fde000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f0eb3de1000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f0eb3fea000)
+agcc@DESKTOP-REHHCAH:~/rpath/way2$ ldd junkr
+        linux-vdso.so.1 (0x00007ffd120bc000)
+        /home/agcc/rpath/way2/libf.so (0x00007f57bf89f000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f57bf6a2000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f57bf8ab000)
+```
+
+You can both of them directly without needing to change LD_LIBARY_PATH both will execute as they sit on the disk now. And it is because we set the soname in the shared object to be a full path. Or really to a link but it is the full path. So both will run!
+
+Interesting and cool technique.
+
+Other places I read about some of this
+https://en.wikipedia.org/wiki/Rpath#:~:text=In%20computing%2C%20rpath%20designates%20the,(or%20another%20shared%20library).
 
 
